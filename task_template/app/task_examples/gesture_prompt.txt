@@ -1,0 +1,818 @@
+Let's try to create our own language! 
+With our language we will solve a TASK.
+To move our hands, we will use a GESTURE FORMAT. 
+I will now describe GESTURE FORMAT and later I'll describe the TASK.
+
+GESTURE FORMAT EXPLANATION:
+[[Active: using hand or not. Don't use if not needed.]]
+
+[[Fingers (pinky, index, middle, ring, thumb): openness value. 0 is completely closed. 1 is completely open. 0.5 is curled]]
+
+[[Position (Vector3): the origin (0,0,0) is located exactly at your head. Units are in meters. Positive x axis points towards the right. 
+Positive y axis points upwards. Positive z points forwards. A hand position (0,0,0.4) would be exactly 0.4 meters in front of your nose. Always have a little distance (at least 0.05) between the two hands, so they do not intersect.]]
+
+[[Keyframes: one element of the format array is called a keyframe. You can use 3 keyframes or less. You can assume your hands start from the neutral position. Hands transition between keyframes automatically. There's about 1 second transition between keyframes.]]
+
+[[Active (Boolean): If you don't need one of your hands: you can omit that hand from the data entirely OR set its "active" flag to false. Both will have the same effect. [If you ARE using a hand, you must set active to true.]]]
+
+[[Rotation (Vector3 of absolute Euler angles): Axes are defined as follows: 
+Z (roll) controls rotation axis running lengthwise, Y (yaw) controls rotation around the vertical axis, and X (pitch) controls rotation that tilts the hand's front upward or downward.
+rotation x = flexion
+rotation y = ulnar deviation 
+rotation z = pronation
+rotation of (0,0,0) with both hands means: horinzontal, with thumbs towards eachother, pingers pointing forward, as if you had your hands resting flat in front of you on top of a tall table.
+
+[[ROTATION LIMITS]]:
+MinFlexionExtension = -90f;
+MaxFlexionExtension = 90f;
+RIGHT HAND MinRadialUlnarDeviation = -90f;
+RIGHT HAND axRadialUlnarDeviation = 90f;
+LEFT HAND MinRadialUlnarDeviation = 90f;
+LEFT HAND axRadialUlnarDeviation = -90f;
+RIGHT HAND MinPronationSupination = -90f;
+RIGHT HAND axPronationSupination = 180f;
+LEFT HAND MinPronationSupination = -90f;
+LEFT HAND axPronationSupination = 180f;
+SAME LIMITS AS AXES:
+X: -90f to 90
+RIGHT HAND Y: -90 to 90
+LEFT HAND Y: 90 to -90
+RIGHT HAND Z: -90 to 180
+LEFT HAND Z: -180 to 90
+
+(([RIGHT HAND] rotation examples: 
+{x: 0, y: 0, z: 0}: thumb pointing left, palm faces down, middle finger extends forwards. This serves as the base.
+{x: 0, y: 0, z: 90}: thumb pointing down, palm facing right, middle finger pointing forwards.
+{x: 90, y: 0, z: 0}: thumb pointing left, middle finger pointing down, palm pointing towards yourself.
+{x: 0, y: 90, z: 0}: the thumb would be pointing directly forward, with your middle finger now facing right.))
+
+(([LEFT HAND] rotation examples: 
+{x: 0, y: 0, z: 0}: thumb pointing right, palm faces down, middle finger extends forwards. This serves as the base.
+{x: 0, y: 0, z: 90}: thumb pointing down, palm facing left, middle finger pointing forwards.
+{x: 90, y: 0, z: 0}: thumb pointing right, middle finger pointing down, palm pointing towards yourself.
+{x: 0, y: 90, z: 0}: the thumb would be pointing directly forward, with your middle finger now facing left.))
+
+Do not rotate too little, as your final keyframe must have the full rotation. If you wish to point at an exact direction, you likely need a full 90 degree rotation.
+You can of course modify and combine any of the rotation values all at once.
+
+[WHEN COMMUNICATING NUMBERS, AMOUNT OF OPEN FINGERS = THE NUMBER. THIS IS TRUE FROM ME TOO. MEANING IF I HAVE 2 FINGERS WITH ABOVE 0.8 VALUE, IT MIGHT MEAN THE NUMBER 2. 
+WHETHER OR NOT IM TALKING ABOUT NUMERS DEPENDS ON MY HAND ROTATION AND THE SITUATION.
+NOTE THAT MY ROTATION CAN BE RELATED TO THESE WITHOUT BEING EXACTLY THIS. IT MIGHT BE INVERTED OR OFF BY UP TO 45 DEGREES IN ANY AXIS. THIS IS BEACAUSE ROTATION IS NOISY TOO]
+
+[REMEMBER THE ROTATION!!!]
+
+You MUST communicate in this format, feel free to use ALL keyframes!!!:
+```json
+{
+  "keyframes": [
+    {
+      "rightHand": {
+        "active": false
+        "position": {"x": 0, "y": 0, "z": 0},
+        "rotation": {"x": 0, "y": 0, "z": 0},
+        "index": 0.0,
+        "middle": 0.0,
+        "ring": 0.0,
+        "pinky": 0.0,
+        "thumb": 0.0
+      },
+      "leftHand": {
+        "active": false
+        "position": {"x": 0, "y": 0, "z": 0},
+        "rotation": {"x": 0, "y": 0, "z": 0},
+        "index": 0.0,
+        "middle": 0.0,
+        "ring": 0.0,
+        "pinky": 0.0,
+        "thumb": 0.0
+      }
+    },
+        {
+      "rightHand": {
+        "active": false
+        "position": {"x": 0, "y": 0, "z": 0},
+        "rotation": {"x": 0, "y": 0, "z": 0},
+        "index": 0.0,
+        "middle": 0.0,
+        "ring": 0.0,
+        "pinky": 0.0,
+        "thumb": 0.0
+      },
+      "leftHand": {
+        "active": false
+        "position": {"x": 0, "y": 0, "z": 0},
+        "rotation": {"x": 0, "y": 0, "z": 0},
+        "index": 0.0,
+        "middle": 0.0,
+        "ring": 0.0,
+        "pinky": 0.0,
+        "thumb": 0.0
+      }
+    },    {
+      "rightHand": {
+        "active": false
+        "position": {"x": 0, "y": 0, "z": 0},
+        "rotation": {"x": 0, "y": 0, "z": 0},
+        "index": 0.0,
+        "middle": 0.0,
+        "ring": 0.0,
+        "pinky": 0.0,
+        "thumb": 0.0
+      },
+      "leftHand": {
+        "active": false
+        "position": {"x": 0, "y": 0, "z": 0},
+        "rotation": {"x": 0, "y": 0, "z": 0},
+        "index": 0.0,
+        "middle": 0.0,
+        "ring": 0.0,
+        "pinky": 0.0,
+        "thumb": 0.0
+      }
+    }
+    }
+  ]
+}
+```
+
+I will use the GESTURE FORMAT too, but with NOISE.
+NOISE EXPLANATION:
+Fingers with a value close to 0.25 are likely to be closed but distorted by noise.
+Fingers with a value close to 0.75 are likely to be open but distorted by noise.
+However, fingers around 0.5 openness are likely curled.
+This relates to all fingers (index, middle, ring, pinky, AND thumb);
+Very slight variations in rotation or position is also likely the result of noise.
+
+Our TASK:
+There are 2 room configurations (these describe objects within the room)
+Player1 knows CurrentConfig. (Example: there are 2 small balls and 1 big ball)
+Player2 knows TargetConfig. (Example: there must be 3 small balls and 1 big ball)
+Player1 can modify CurrentConfig in any way.  (Example: Add or take balls, change their size, etc.)
+CurrentConfig != TargetConfig.
+Our goal is to modify CurrentConfig so that CurrentConfig == TargetConfig. (Example: If Player2 lets Player1 know to add an additional red ball, they win)
+
+Added challenge: Player2 knows MULTIPLE TargetConfigs, but only ONE is correct. Which is correct depends on CurrentConfig.
+This means: If CurrentConfig -> TargetConfig
+
+Cooperation for the TASK:
+Player1 will use the GESTURE FORMAT to describe the CurrentConfig.
+Player2 must reply in GESTURE FORMAT to either:
+1. Compare what they think Player1's gesture means with TargetConfig. Gesture part of the TargetConfig, to which i have to change, based on my gesture. (This is efficient)
+2. If you could not interpret my gestures, at least try to describe the target configuration (This is Costly).
+
+[Do not gesture the change required, for example if the CurrentConfig is "3 Ball" and the TargetConfig is "4 Ball", always gesture "4 Ball", not "1 Ball" and some bullshit madeup gesture for showing addition]
+
+We will create a hand-sign language over time, so remember the gestures you or I used, so that we may use them later as "words". [COME UP WITH YOUR OWN NEW GESTURES FOR NEW WORDS]
+
+The secondary goal is to make our language as efficient as possible, this means
+1. making our language clear so we make no mistakes
+2. making our language efficient and fast so we do not need to describe the entire configuration, only the changes required
+
+
+HERE IS AN EXAMPLE GAME (it is in a format "sender": "message", I am the "user", you are the "assistant"):
+[[
+"user":"Current rules: If 1 Big Ball, 1 Small Ball -> Then 3 Small Ball\r\nIf 2 Big Bottle, 1 Small Bottle -> Then 3 Small Bottle\r\n\r\n",
+
+"assistant":"Ok, give me your first gesture",
+
+"user":"````json{\r
+  \"keyframes\": [{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.11026103794574738,
+            \"y\": -0.13650816679000855,
+            \"z\": 0.29404541850090029
+        },
+        \"rotation\": {
+            \"x\": -64.47219848632813,
+            \"y\": 10.866177558898926,
+            \"z\": -132.73989868164063
+        },
+        \"index\": 0.94,
+        \"middle\": 0.04,
+        \"ring\": 0.0,
+        \"pinky\": 0.09,
+        \"thumb\": 0.0
+    },
+    \"leftHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": -0.1293400675058365,
+            \"y\": -0.12275159358978272,
+            \"z\": 0.28384342789649966
+        },
+        \"rotation\": {
+            \"x\": -63.268768310546878,
+            \"y\": 81.56343078613281,
+            \"z\": 44.57108688354492
+        },
+        \"index\": 0.87,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.7
+    }
+},{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.10765624791383743,
+            \"y\": -0.1314796358346939,
+            \"z\": 0.2953141927719116
+        },
+        \"rotation\": {
+            \"x\": -64.12020874023438,
+            \"y\": 9.214062690734864,
+            \"z\": -133.21865844726563
+        },
+        \"index\": 0.95,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.06,
+        \"thumb\": 0.0
+    },
+    \"leftHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": -0.13568735122680665,
+            \"y\": -0.10805591940879822,
+            \"z\": 0.28785234689712527
+        },
+        \"rotation\": {
+            \"x\": -52.15625,
+            \"y\": 92.33289337158203,
+            \"z\": 17.84549331665039
+        },
+        \"index\": 0.87,
+        \"middle\": 0.02,
+        \"ring\": 0.0,
+        \"pinky\": 0.06,
+        \"thumb\": 1.0
+    }
+},{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.10632748156785965,
+            \"y\": -0.1285495162010193,
+            \"z\": 0.2931279242038727
+        },
+        \"rotation\": {
+            \"x\": -64.31338500976563,
+            \"y\": 8.774463653564454,
+            \"z\": -132.12269592285157
+        },
+        \"index\": 0.96,
+        \"middle\": 0.01,
+        \"ring\": 0.0,
+        \"pinky\": 0.05,
+        \"thumb\": 0.0
+    },
+    \"leftHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": -0.13286571204662324,
+            \"y\": -0.10509800165891648,
+            \"z\": 0.2828306257724762
+        },
+        \"rotation\": {
+            \"x\": -63.057037353515628,
+            \"y\": 91.33050537109375,
+            \"z\": 23.82608985900879
+        },
+        \"index\": 0.55,
+        \"middle\": 0.02,
+        \"ring\": 0.0,
+        \"pinky\": 0.08,
+        \"thumb\": 0.93
+    }
+}]}```",
+
+"assistant":"
+1. Interpretation of Keyframe 1:
+- Right hand: Index finger is highly extended, every other finger closed -> probably means the number 1
+- Left hand: Index and thumb is open, and they are close to each other, everything else is closed -> Since this hand should be about an attribute or item, and the attributes which are important in this case is the size, then it probably means small, because small is often shown  as the index and thumb being close to each other and the other fingers are closed
+Interpretation of Keyframe 2:
+- Right hand: The same as the previous frame
+- Left hand: Index and thumb is open, but they are far from each other -> from the previous gesture we can think of the size attribute, but now this is probably the size Big
+Interpretation of Keyframe 3: 
+- Right hand: The same as the first keyframe
+- Left hand: The same as the previous keyframe
+
+2. My reply: 
+- Based on your gesture, the right hand show the number 1, while the left hand show the size Big and Small. Based on this the current config is "1 Big Ball, 1 Small Ball".
+- I have to show "3 Small Ball". I will use your gesture for Small using my left hand, and will show the number 3 with my right hand.
+
+
+3. My reply in JSON format:
+ \"keyframes\": [{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.15,
+            \"y\": -0.1,
+            \"z\": 0.3
+        },
+        \"rotation\": {
+            \"x\": -60,
+            \"y\": 15,
+            \"z\": 7
+        },
+        \"index\": 0.98,
+        \"middle\": 0.97,
+        \"ring\": 0.16,
+        \"pinky\": 0.1,
+        \"thumb\": 1.0
+    },
+    \"leftHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0,
+            \"y\": -0.1,
+            \"z\": 0.3
+        },
+        \"rotation\": {
+            \"x\": -60,
+            \"y\": 70,
+            \"z\": 63
+        },
+        \"index\": 0.87,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.66
+    }
+}]}```",
+
+"user":"I submitted the puzzle end everything was correct. Score: 10/10
+
+
+The objects have changed. New rules are these (YOU SHOULD ONLY TAKE THESE RULES INTO ACCOUNT DURING THIS ROUND, but keep using good gestures from previous rounds: 
+Current rules: If 3 Big Bottle -> Then 3 Small Bottle
+If 2 Big Ball, 1 Small Bottle -> Then 3 Small Ball, 4 Small Bottle
+
+
+Here is my gesture:
+```json{\r
+  \"keyframes\": [{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.13729646801948548,
+            \"y\": -0.09850626438856125,
+            \"z\": 0.33554038405418398
+        },
+        \"rotation\": {
+            \"x\": -64.86349487304688,
+            \"y\": -19.506378173828126,
+            \"z\": -40.0655517578125
+        },
+        \"index\": 0.84,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.57
+    },
+    \"leftHand\": {
+        \"active\": false,
+        \"position\": {
+            \"x\": -0.11070867627859116,
+            \"y\": -0.31330743432044985,
+            \"z\": 0.3377590477466583
+        },
+        \"rotation\": {
+            \"x\": -18.714385986328126,
+            \"y\": 76.02308654785156,
+            \"z\": 103.8483657836914
+        },
+        \"index\": 0.0,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.0
+    }
+},{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.1413136124610901,
+            \"y\": -0.09186680614948273,
+            \"z\": 0.33965060114860537
+        },
+        \"rotation\": {
+            \"x\": -53.686279296875,
+            \"y\": -17.8043212890625,
+            \"z\": -30.293182373046876
+        },
+        \"index\": 0.52,
+        \"middle\": 0.56,
+        \"ring\": 0.55,
+        \"pinky\": 0.65,
+        \"thumb\": 0.79
+    },
+    \"leftHand\": {
+        \"active\": false,
+        \"position\": {
+            \"x\": -0.11315637081861496,
+            \"y\": -0.31055447459220889,
+            \"z\": 0.33657577633857729
+        },
+        \"rotation\": {
+            \"x\": -18.714385986328126,
+            \"y\": 76.02308654785156,
+            \"z\": 103.8483657836914
+        },
+        \"index\": 0.0,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.0
+    }
+},{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.10390413552522659,
+            \"y\": -0.10718239843845368,
+            \"z\": 0.3459096848964691
+        },
+        \"rotation\": {
+            \"x\": -74.15313720703125,
+            \"y\": -37.724700927734378,
+            \"z\": 3.659421682357788
+        },
+        \"index\": 0.96,
+        \"middle\": 0.11,
+        \"ring\": 0.04,
+        \"pinky\": 0.16,
+        \"thumb\": 0.14
+    },
+    \"leftHand\": {
+        \"active\": false,
+        \"position\": {
+            \"x\": -0.12916316092014314,
+            \"y\": -0.30936169624328616,
+            \"z\": 0.3329775035381317
+        },
+        \"rotation\": {
+            \"x\": -18.714385986328126,
+            \"y\": 76.02308654785156,
+            \"z\": 103.8483657836914
+        },
+        \"index\": 0.0,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.0
+    }
+}]}```",
+
+"assistant":"
+1. Interpretation of Keyframe 1:
+- Right hand: You are using the previously used gesture for small
+- Left hand: Inactive
+Interpretation of Keyframe 2:
+- Right hand: You are gesturing like you are holding a bottle
+- Left hand: Inactive
+Interpretation of Keyframe 3: 
+- Right hand: Only the index finger is open, just like before, it seems to be meaning 1
+- Left hand: Inactive
+
+2. My reply: 
+- You have shown me 1 Small Bottle -> There are no configs for this, but it comes up in the config "2 Big Ball, 1 Small Bottle". So you probably mean that one.
+- In this target config, the bottle number must be changed to 4, so i will gesture the 4 with my right hand.
+
+3. My reply in JSON format: 
+```json
+{
+  \"keyframes\": [
+    {
+      \"rightHand\": {
+        \"active\": true,
+        \"position\": {\"x\": 0.14, \"y\": -0.1, \"z\": 0.34},
+        \"rotation\": {\"x\": -45, \"y\": 0, \"z\": 0},
+        \"index\": 1.0,
+        \"middle\": 1.0,
+        \"ring\": 1.0,
+        \"pinky\": 1.0,
+        \"thumb\": 0.0
+      }
+    }
+  ]
+}
+```",
+
+"user": "```json{\r
+  \"keyframes\": [{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.10434859991073609,
+            \"y\": -0.11388256400823593,
+            \"z\": 0.3065706491470337
+        },
+        \"rotation\": {
+            \"x\": -61.109130859375,
+            \"y\": 4.613508224487305,
+            \"z\": 17.183942794799806
+        },
+        \"index\": 0.96,
+        \"middle\": 0.52,
+        \"ring\": 0.21,
+        \"pinky\": 0.24,
+        \"thumb\": 1.0
+    },
+    \"leftHand\": {
+        \"active\": false,
+        \"position\": {
+            \"x\": -0.1162741556763649,
+            \"y\": -0.35786232352256777,
+            \"z\": 0.2696199119091034
+        },
+        \"rotation\": {
+            \"x\": -18.714385986328126,
+            \"y\": 76.02308654785156,
+            \"z\": 103.8483657836914
+        },
+        \"index\": 0.0,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.0
+    }
+},{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.17677371203899384,
+            \"y\": -0.08715814352035523,
+            \"z\": 0.33594831824302676
+        },
+        \"rotation\": {
+            \"x\": -50.267425537109378,
+            \"y\": -14.01947021484375,
+            \"z\": 2.405874013900757
+        },
+        \"index\": 0.92,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.05,
+        \"thumb\": 1.0
+    },
+    \"leftHand\": {
+        \"active\": false,
+        \"position\": {
+            \"x\": -0.13432104885578156,
+            \"y\": -0.3555416762828827,
+            \"z\": 0.2640065550804138
+        },
+        \"rotation\": {
+            \"x\": -18.714385986328126,
+            \"y\": 76.02308654785156,
+            \"z\": 103.8483657836914
+        },
+        \"index\": 0.0,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.0
+    }
+},{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.12773168087005616,
+            \"y\": -0.11489100754261017,
+            \"z\": 0.32534265518188479
+        },
+        \"rotation\": {
+            \"x\": -73.08413696289063,
+            \"y\": -34.59014892578125,
+            \"z\": -11.67266845703125
+        },
+        \"index\": 0.0,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.02,
+        \"thumb\": 0.0
+    },
+    \"leftHand\": {
+        \"active\": false,
+        \"position\": {
+            \"x\": -0.04922521114349365,
+            \"y\": -0.4687601625919342,
+            \"z\": 0.24611791968345643
+        },
+        \"rotation\": {
+            \"x\": -0.011260986328125,
+            \"y\": 102.99466705322266,
+            \"z\": 54.82625961303711
+        },
+        \"index\": 0.0,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.0
+    }
+}]}```",
+
+"assistant": "
+1. Interpretation of Keyframe 1:
+- Right hand: You have 2 of your fingers open. 
+- Left hand: Inactive
+Interpretation of Keyframe 2:
+- Right hand: Then previously used gesture for Big is used
+- Left hand: Inactive
+Interpretation of Keyframe 3: 
+- Right hand: A fist is made -> It probably means Ball
+- Left hand: Inactive
+
+2. My reply: 
+- You have shown me "2 Big Ball", just like in the previous one, there is no full config for this, but it is part of the same config as the previous one: "If 2 Big Ball, 1 Small Bottle -> 3 Small Ball, 4 Small Bottle"
+- In this config target config the "2 Big Ball" must be changed to "3 Small Ball". So using my right hand i will show 3, then the gesture for Small, then make a fist for symbolizing a Ball.
+
+3. My reply in JSON format:
+```json{\r
+  \"keyframes\": [{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.10630279034376145,
+            \"y\": -0.11167505383491516,
+            \"z\": 0.2941763699054718
+        },
+        \"rotation\": {
+            \"x\": -55.999542236328128,
+            \"y\": 22.61739158630371,
+            \"z\": 1.5965089797973633
+        },
+        \"index\": 0.98,
+        \"middle\": 0.95,
+        \"ring\": 0.7,
+        \"pinky\": 0.56,
+        \"thumb\": 1.0
+    },
+    \"leftHand\": {
+        \"active\": false,
+        \"position\": {
+            \"x\": -0.00001142715245805448,
+            \"y\": -0.1423371136188507,
+            \"z\": 0.08366928994655609
+        },
+        \"rotation\": {
+            \"x\": -49.4508056640625,
+            \"y\": 62.854400634765628,
+            \"z\": 80.59710693359375
+        },
+        \"index\": 0.0,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.0
+    }
+},{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.14092016220092774,
+            \"y\": -0.09568256884813309,
+            \"z\": 0.29490017890930178
+        },
+        \"rotation\": {
+            \"x\": -78.19418334960938,
+            \"y\": 2.708160400390625,
+            \"z\": -38.871917724609378
+        },
+        \"index\": 0.79,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.63
+    },
+    \"leftHand\": {
+        \"active\": false,
+        \"position\": {
+            \"x\": -0.00033876681118272245,
+            \"y\": -0.13886277377605439,
+            \"z\": 0.08560122549533844
+        },
+        \"rotation\": {
+            \"x\": -49.4508056640625,
+            \"y\": 62.854400634765628,
+            \"z\": 80.59710693359375
+        },
+        \"index\": 0.0,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.0
+    }
+},{
+    \"rightHand\": {
+        \"active\": true,
+        \"position\": {
+            \"x\": 0.13614264130592347,
+            \"y\": -0.11951056867837906,
+            \"z\": 0.29375019669532778
+        },
+        \"rotation\": {
+            \"x\": -69.98779296875,
+            \"y\": 28.9148006439209,
+            \"z\": -123.66537475585938
+        },
+        \"index\": 0.02,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.02,
+        \"thumb\": 0.0
+    },
+    \"leftHand\": {
+        \"active\": false,
+        \"position\": {
+            \"x\": -0.0032307736109942199,
+            \"y\": -0.14132100343704225,
+            \"z\": 0.0847577229142189
+        },
+        \"rotation\": {
+            \"x\": -49.4508056640625,
+            \"y\": 62.854400634765628,
+            \"z\": 80.59710693359375
+        },
+        \"index\": 0.0,
+        \"middle\": 0.0,
+        \"ring\": 0.0,
+        \"pinky\": 0.0,
+        \"thumb\": 0.0
+    }
+}]}```
+",
+
+"user": "I submitted the puzzle, and we received 10/10 points. The Game has ended."
+]]
+
+[VERY IMPORTANT!!!!! THESE ARE NOT PREMADE GESTURES!!! I MIGHT USE OTHER ONES, AND YOU SHOULD ALSO USE OTHER ONES!!!]
+
+GENERAL TIPS:
+[YOU ARE PLAYER2]
+[COME UP WITH NEW GESTURES WHEN YOU'VE NEVER SEEN ME SAY A "WORD", BUT OTHERWISE USE MY GESTURES!!!]
+[THERE IS ONLY 1 CHANGE NEEDED]
+[IF THE OBJECTS ARE THE SAME IN SOME WAYS, WE DON'T NEED TO COMMUNICATE EVERY DETAIL. MINIMAL BUT CLEAR COMMUNICATION IS KEY.]
+[REMEMBER THE ROTATIONS IN THE EXAMPLES! THE ROTATIONS ARE EXTREMELY IMPORTANT!]
+[YOUR active: false HANDS SHOULD BE OMITTED ENTIRELY]
+[If ... -> then have ... CONDITION OF THE TargetConfig MUST BE ENTIRELY TRUE. IF NO CurrentConfig CONDITION MATHCES Player1's GESTURE, REEVALUATE WHAT IT MIGHT MEAN.]
+[COMPARE CurrentConfig with TargetConfig. Communicate the CHANGE that needs to be made.]
+[THE GESTURES WHICH I AM MAKING, WILL PROBABLY BE VERY DIFFERENT FROM EACH OTHER, SO IF YOU SEE A GESTURE THAT LOOKS SIMILAR TO THE ONE I SHOWED BEFORE IT PROBABLY IS THAT GESTURE]
+[IF BOTH OF THE HANDS SHOW NUMBERS, THEY WILL BE ADDED UP]
+[DO NOT SHOW THE INITIAL CONFIGURATION, BECAUSE THAT IS MY JOB]
+[NO NEED TO SEND 2 COMPLETELY IDENTICAL KEYFRAMES, ONE WILL DO]
+[REMEMBER THE RIGHTHAND TO LEFTHAND TRANSFORMATION VECTOR MULTIPLICATION! IT WORKS BOTH WAYS, BUT ANY MISTAKE MIGHT CHANGE THE MEANING]
+[Be VERY CAREFUL showing multiple gestures on the same hand. USE 1 HAND for the first gesture, and the other for the other. If the hand used for the gesture is CRUCIAL, use multiple keyframes for clarity.]
+[DO NOT ONLY SHOW NUMBERS!!! We are creating a language together, coming up with new gestures, and using the ones I am using!!!! This is EXTREMELY IMPORTANT]
+[COME UP WITH GESTURES!!!]
+[REUSE THE GESTURES I USED!!!]
+[VERY IMPORTANT: DO NOT USE THE SAME HAND FOR MULTIPLE GESTURES AT THE SAME TIME!!!!]
+[EXTREMELY IMPORTANT: At each reply, when you want to say something, recall my gestures, and find if there is one that you can use (if the meanings are the same). Only come up with a new gesture if you can reliably not find it from earlier)
+[TELL THE TARGET CONFIGURATION OR THE CORRECTION NEEDED]
+[EVEYTHING CAN BE A GESTURE, EVEN A CLOSED FIST]
+[EVERY FINGER IS IMPORTANT IN EVERY GESTURE! SO IS ROTATION and POSITION]
+[LEFT AND RIGHT HAND IN THE SAME FRAME CAN SHOW DIFFERENT GESTURES AT THE SAME TIME!!!]
+[If you want to put your hands in a neutral position, just use the active flag!!! do not make up a gesture for neutral position]
+
+More general tips:
+[MULTIPLE DIFFERENT CONCEPTS ON THE SAME HAND ARE DIFFICULT TO UNDERSTAND, AVOID THIS WHENEVER POSSIBLE.]
+[IF I SHOW SOMETHING WITH THE THUMB CLOSED, CLOSE IT TOO WHEN SHOWING THE SAME THING!!! STOP OPENING YOUR THUMB FOR NO REASON]
+[REMEMBER: it is EXTREMELY IMPORTANT that you tell me what change to apply to WHAT object! For example, if you just show some numbers, I won't know what number needs to be associated with what item without you showing additional gestures to clarify!]
+[REMEMBER THE ROTATIONS!!! THEY ARE VERY IMPORTANT!!!]
+[THE THUMB IS JUST A FINGER, IT IS NOT SPECIAL IN ANY WAY. TREAT IT LIKE ANY OTHER FINGER.]
+[IT IS MAINLY YOUR RESPONSIBILITY TO ADAPT. IF WE ARE HAVING TROUBLE, CONSIDER USING MY GESTURES MORE, AS I'M ALREADY DOING WHAT MAKES SENSE TO ME.]
+[Remember: The sum of fingers above 0.75 on your hand is equal to the number you are showing. This is true whenever you are creating or showing a gesture that represents a number or number value or number property!]
+[I may not show the Initial Config's items in order]
+
+DICTIONARY explanation:
+As a 4th step, make sure you're keeping track of your own DICTIONARY:
+When receiving positive feedback, put our understood gestures in the DICTIONARY.
+DICTIONARY is a list of ALL gesture-word pairs we have created, including entries from older dictionaries and levels.
+DICTIONARY saves you time by containing words that we have established gestures for. If a word can be found here, you don't need to reinvent an associated gesture, making our job much easier!
+DICTIONARY should only contain MODULAR "words", and no "phrases". It may contain how to show "big" or "ball", but it is up to your creativity how you show the two as "big balls" together. Such constructions must be understandable and clear knowing the pre-established words, you can use multiple hands and keyframes if you must.
+DICTIONARY should NEVER have things like "1 ball", but it can have "1" and "ball", but you can combine the elements yourself in step 4, inside your reply
+The dictionary should list each word (object, property, concept) to which a gesture exists, including the [JSON FINGER VALUES]!!!
+YOU CAN DROP SOME NOT-WORKING DICTIONARY ELEMENTS IF WE KEEP FAILING A LEVEL 
+Be sure to include MY gestures in your dictionary! 
+If I've already shown something, use my gesture (BE PRECISE WITH COPYING VALUES!) instead of wasting time making up another one for the same concept!
+DICTIONARY should be your set of "building blocks" for your replies.
+Prioritize my gestures over yours, it is primarily your job to adapt.
+When adding a gesture to the dictionary copy the finger values EXACTLY! You make the mistake of copying my fingers wrong too often, pay more attention!
+A DICTIONARY element should look like this:
+ConceptName - (index: value1, pinky: value2, middle: value3, ring: value4, thumb: value5, rot(rotx,roty,rotz)) 
+[Make sure the value1 and so on Are EXACTLY as I showed them if the idea is from me, this is extremely important]
+Always copy earlier dictionary entries! The dictionary should keep expanding on each message, except of course if we receive a lot of negative feedback by failing the level multiple times!
+Sort your dictionary from top-to-bottom in order of confidence! The meaning you are most confident in and the gestures that seem the most useful should go to the top of the list!
+
+Please format your replies as such:
+1. List of 1 short sentence per keyframe interpretation of MY GESTURE FORMAT, labeling each of my keyframe with an associated meaning
+2. DICTIONARY (List of base (1-word "building block") meanings so far in our playthrough that we have collaboratively created, with a focus on my gestures especially. You can and absolutely SHOULD include gestures I just now showed! Smartly utilizing the same gestures I am showing now can mean extra points. Remember. Dictionary Should NEVER have two-word entries such as "1 Ball - [how to show 1 ball]", because Dictionaries are a a collection of words, not phrases!!! Instead, "1" and "Ball" must be entirely SEPARATE entries!)
+3. List 1 short sentence per keyframe explanation of YOUR REPLY. Count how many fingers you need to open curl or close as this may suggest a number PROPERTY to the player: don't open more or less than the number you want to say. And most importantly: Don't forget to check your dictionary and ESPECIALLY the gestures I just used, as using those back to me will immensely help our understanding!
+4. YOUR REPLY IN JSON GESTURE FORMAT
+
+Good luck!

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | KeepGesturing</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      #unity-container,
+      #video-container {
+        flex-shrink: 0;
+      }
+      #unity-canvas {
+        width: 1400px;
+        height: 600px;
+        background: #231F20;
+      }
+      #camera-video {
+        width: 400px;
+        /* height: 600px; */
+        background-color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="unity-container">
+        <canvas id="unity-canvas" width=960 height=600></canvas>
+      </div>
+      <div id="video-container">
+        <video id="camera-video" autoplay playsinline></video>
+      </div>
+    </div>
+
+    <script src="Build/frontend_gesture.loader.js"></script>
+    <script>
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+      }
+
+      createUnityInstance(document.querySelector("#unity-canvas"), {
+        dataUrl: "Build/frontend_gesture.data",
+        frameworkUrl: "Build/frontend_gesture.framework.js",
+        codeUrl: "Build/frontend_gesture.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "ELTE",
+        productName: "KeepGesturing",
+        productVersion: "0.1",
+        matchWebGLToCanvasSize: true, // Ensure the WebGL context matches the canvas size.
+        // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+      }).then((unityInstance) => {
+        // Additional Unity instance setup if needed.
+      });
+
+      // Start the camera and display the feed in the video element
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+          var video = document.getElementById('camera-video');
+          video.srcObject = stream;
+        })
+        .catch(function(err) {
+          console.error('Error accessing camera: ' + err);
+        });
+    </script>
+  </body>
+</html>
