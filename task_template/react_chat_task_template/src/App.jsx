@@ -34,7 +34,6 @@ const App = () => {
           <div className="main-interaction-overlay"> </div>
         )}
         <Workspace />
-        <ConversationDisplay />
       </div>
       <FinishButton isFinishClicked={isFinishClicked} isRatingSubmitted={isRatingSubmitted} toggleFinish={toggleFinish} />
       {isFinished && <FeedbackForm viewPointRef={viewPointRef} isRatingSubmitted={isRatingSubmitted} setIsRatingSubmitted={setIsRatingSubmitted}/>}

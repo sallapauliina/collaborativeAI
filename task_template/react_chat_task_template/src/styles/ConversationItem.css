@@ -1,0 +1,29 @@
+.message {
+  margin: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 80%;
+}
+
+.message.user {
+  background-color: #e3f2fd;
+  margin-left: auto;
+}
+
+.message.ai {
+  background-color: #f5f5f5;
+  margin-right: auto;
+}
+
+.message-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.message.ai .message-content {
+  color: #333;
+}
+
+.message.user .message-content {
+  color: #1565c0;
+} 
