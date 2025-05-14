@@ -61,8 +61,8 @@ a:active {
 
 .main-interaction {
   display: flex;
-  height: calc(100vh - 234px);
   padding: 20px;
+  flex-direction: column;
   position: relative;
 }
 

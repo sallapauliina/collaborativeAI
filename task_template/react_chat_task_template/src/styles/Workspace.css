@@ -1,0 +1,68 @@
+.workspace-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.main-workspace {
+  overflow-y: auto;
+}
+
+.message-history {
+  background: #fff;
+  border-left: 1px solid #dee2e6;
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.history-item {
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.history-item.user {
+  background-color: #e3f2fd;
+}
+
+.history-item.ai {
+  background-color: #f5f5f5;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 0.9em;
+}
+
+.sender {
+  font-weight: bold;
+}
+
+.timestamp {
+  color: #6c757d;
+}
+
+.history-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.message-text p {
+  margin: 5px 0;
+}
+
+.no-messages {
+  color: #6c757d;
+  text-align: center;
+  font-style: italic;
+  padding: 20px;
+} 

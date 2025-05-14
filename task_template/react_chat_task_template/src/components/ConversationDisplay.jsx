@@ -5,21 +5,41 @@ import '../styles/ConversationDisplay.css';
 import '../styles/ConversationItem.css';
 
 const ConversationDisplay = ({ isLoading, setIsLoading, theme, isDisabled, messages = [], addMessage }) => {
-  const [newComment, setNewComment] = useState("");
+  const [inputData, setInputData] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [currentAnalysis, setCurrentAnalysis] = useState({
+    inconsistencies: "",
+    bias: ""
+  });
+  const [agreedChanges, setAgreedChanges] = useState([]);
   const messagesRef = useRef(null);
 
   function parseQualitativeResponse(input) {
-    // Initialize variables to store the parsed parts
-    let analysis = "";
+    let analysis = {
+      inconsistencies: "",
+      bias: ""
+    };
     let suggestions = "";
 
-    // Extract analysis section
+    // Extract analysis sections
     const analysisMatch = input.match(/\[ANALYSIS\]([\s\S]*?)\[\/ANALYSIS\]/);
     if (analysisMatch) {
-      analysis = analysisMatch[1].trim();
+      const analysisContent = analysisMatch[1];
+      
+      // Parse inconsistencies
+      const inconsistenciesMatch = analysisContent.match(/\[INCONSISTENCIES\]([\s\S]*?)\[\/INCONSISTENCIES\]/);
+      if (inconsistenciesMatch) {
+        analysis.inconsistencies = inconsistenciesMatch[1].trim();
+      }
+
+      // Parse bias
+      const biasMatch = analysisContent.match(/\[BIAS\]([\s\S]*?)\[\/BIAS\]/);
+      if (biasMatch) {
+        analysis.bias = biasMatch[1].trim();
+      }
     }
 
-    // Extract suggestions section
+    // Extract suggestions
     const suggestionsMatch = input.match(/\[SUGGESTIONS\]([\s\S]*?)\[\/SUGGESTIONS\]/);
     if (suggestionsMatch) {
       suggestions = suggestionsMatch[1].trim();
@@ -28,38 +48,44 @@ const ConversationDisplay = ({ isLoading, setIsLoading, theme, isDisabled, messa
     return { analysis, suggestions };
   }
 
-  function checkAndAddMessage(sender, text, type) {
-    if (!text) {
-      console.log("no message");
-      return;
-    }
-    addMessage({ sender: sender, text: text, type: "dialogue"}); 
-  }
-
-  const handleSubmit = (event) => {
+  const handleAnalyze = (event) => {
     event.preventDefault();
-    if (!newComment.trim()) {
-      return;
-    }
+    if (!inputData.trim()) return;
+    
     setIsLoading(true);
-    checkAndAddMessage("user", newComment, "dialogue");   
+    // Add user's input to message history
+    addMessage({
+      sender: 'user',
+      text: `Submitted data for analysis:\n${inputData}`,
+      type: 'data'
+    });
 
     taskService
         .submitUserInput({
           inputData: {
-            text: newComment,
-            history: messages  // Add conversation history
+            text: inputData,
+            type: "analyze"
           },
-          text: newComment,
-          objective: theme  // Add theme/objective if needed
+          text: inputData,
+          objective: theme
         })
         .then((returnedResponse) => {
-          if (returnedResponse && returnedResponse.text) {
+          if (returnedResponse?.text) {
             const parsed = parseQualitativeResponse(returnedResponse.text);
-            const formattedResponse = `Analysis:\n${parsed.analysis}\n\nSuggestions:\n${parsed.suggestions}`;
-            checkAndAddMessage("ai", formattedResponse, "dialogue");
-          } else {
-            console.error("Invalid response format:", returnedResponse);
+            setCurrentAnalysis(parsed.analysis);
+            // Add AI's analysis to message history with structured format
+            const analysisText = [
+              'Analysis:',
+              parsed.analysis.inconsistencies ? `\nInconsistencies:\n${parsed.analysis.inconsistencies}` : '',
+              parsed.analysis.bias ? `\nPotential Bias:\n${parsed.analysis.bias}` : '',
+              parsed.suggestions ? `\nSuggestions:\n${parsed.suggestions}` : ''
+            ].filter(Boolean).join('\n');
+            
+            addMessage({
+              sender: 'ai',
+              text: analysisText,
+              type: 'analysis'
+            });
           }
           setIsLoading(false);
         })
@@ -67,39 +93,214 @@ const ConversationDisplay = ({ isLoading, setIsLoading, theme, isDisabled, messa
           console.error("Error:", error);
           setIsLoading(false);
         });
-    setNewComment("");
+  };
+
+  const handleFeedback = (event) => {
+    event.preventDefault();
+    if (!feedback.trim()) return;
+
+    setIsLoading(true);
+    // Add user's feedback to message history
+    addMessage({
+      sender: 'user',
+      text: `Feedback on analysis:\n${feedback}`,
+      type: 'feedback'
+    });
+
+    taskService
+        .submitUserInput({
+          inputData: {
+            text: feedback,
+            currentAnalysis,
+            originalData: inputData,
+            type: "feedback"
+          },
+          text: feedback,
+          objective: theme
+        })
+        .then((returnedResponse) => {
+          if (returnedResponse?.text) {
+            const parsed = parseQualitativeResponse(returnedResponse.text);
+            setCurrentAnalysis(parsed.analysis);
+            
+            // Add AI's response to message history with structured format
+            const responseText = [
+              'Response to feedback:',
+              parsed.suggestions ? `\n${parsed.suggestions}` : '',
+              '\nUpdated Analysis:',
+              parsed.analysis.inconsistencies ? `\nInconsistencies:\n${parsed.analysis.inconsistencies}` : '',
+              parsed.analysis.bias ? `\nPotential Bias:\n${parsed.analysis.bias}` : ''
+            ].filter(Boolean).join('\n');
+            
+            addMessage({
+              sender: 'ai',
+              text: responseText,
+              type: 'feedback-response'
+            });
+            
+            // Add agreed change to audit trail if AI confirms
+            if (parsed.suggestions.toLowerCase().includes('agree')) {
+              setAgreedChanges(prev => [...prev, {
+                timestamp: new Date().toISOString(),
+                feedback,
+                response: parsed.suggestions,
+                change: responseText
+              }]);
+            }
+          }
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          setIsLoading(false);
+        });
   };
 
   return (
-    <div className="chat-space-wrapper">
-      <h2>Qualitative Data Validation</h2>
-      <div className="chat-space">
-        <div className="messages" ref={messagesRef}>
-          {messages?.filter(msg => msg.text !== "" && msg.text !== null)
-            .map((msg, index) => (
-              <ConversationItem key={index} message={msg} /> 
-            ))
-          }
+    <div className="validation-workspace">
+      {/* Data Input Section */}
+      <section className="data-input-section">
+        <h3>Input Qualitative Data</h3>
+        <div className="dialogue-content" ref={messagesRef}>
+          {inputData && (
+            <div className="dialogue-item user">
+              <div className="dialogue-text">
+                {inputData.split('\n').map((line, i) => (
+                  <p key={i}>{line}</p>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        {isLoading && <div>Analyzing data...</div>} 
         <div className="form-wrapper">
-          <form onSubmit={handleSubmit} className="input-form">
+          <form onSubmit={handleAnalyze} className="input-form">
             <textarea 
-              value={newComment}
+              value={inputData}
               disabled={!isDisabled || isLoading}
-              onChange={(event) => setNewComment(event.target.value)} 
+              onChange={(e) => setInputData(e.target.value)} 
               placeholder="Paste your qualitative data here for analysis"
-              rows={4}
+              rows={6}
               className="input-textarea"
             />
-            <button type="submit" 
+            <button 
+              type="submit" 
               disabled={!isDisabled || isLoading}
-              onClick={handleSubmit}> 
-              Analyze
+              className="analyze-button"
+            > 
+              Analyze Data
             </button>
           </form>
         </div>
-      </div>
+      </section>
+
+      {/* Current Analysis Display */}
+      <section className="analysis-section">
+        <h3>Current Analysis</h3>
+        <div className="analysis-content">
+          {(currentAnalysis.inconsistencies || currentAnalysis.bias) ? (
+            <div className="analysis-sections">
+              {currentAnalysis.inconsistencies && (
+                <div className="analysis-category">
+                  <h4>Inconsistencies Found</h4>
+                  <div className="dialogue-item ai">
+                    <div className="dialogue-text">
+                      {currentAnalysis.inconsistencies.split('\n').map((line, i) => (
+                        <p key={i}>{line}</p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {currentAnalysis.bias && (
+                <div className="analysis-category">
+                  <h4>Potential Bias Identified</h4>
+                  <div className="dialogue-item ai">
+                    <div className="dialogue-text">
+                      {currentAnalysis.bias.split('\n').map((line, i) => (
+                        <p key={i}>{line}</p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="no-analysis">
+              {inputData ? 
+                "No inconsistencies or bias found in the data." : 
+                "No analysis yet. Submit data to begin."}
+            </p>
+          )}
+        </div>
+        {isLoading && <div className="loading">Analyzing data...</div>}
+      </section>
+
+      {/* Feedback Section */}
+      <section className="feedback-section">
+        <h3>Provide Feedback</h3>
+        <div className="dialogue-content">
+          {feedback && (
+            <div className="dialogue-item user">
+              <div className="dialogue-text">
+                {feedback.split('\n').map((line, i) => (
+                  <p key={i}>{line}</p>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="form-wrapper">
+          <form onSubmit={handleFeedback} className="input-form">
+            <textarea 
+              value={feedback}
+              disabled={!isDisabled || isLoading || !(currentAnalysis.inconsistencies || currentAnalysis.bias)}
+              onChange={(e) => setFeedback(e.target.value)} 
+              placeholder={currentAnalysis.inconsistencies || currentAnalysis.bias ? 
+                "Provide feedback on the analysis..." : 
+                "Submit data for analysis first"}
+              rows={4}
+              className="feedback-textarea"
+            />
+            <button 
+              type="submit" 
+              disabled={!isDisabled || isLoading || !(currentAnalysis.inconsistencies || currentAnalysis.bias)}
+              className="feedback-button"
+            > 
+              Submit Feedback
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* Audit Trail */}
+      <section className="audit-trail">
+        <h3>Audit trail</h3>
+        <div className="audit-list">
+          {agreedChanges.map((entry, index) => (
+            <div key={index} className="audit-entry">
+              <div className="audit-timestamp">{new Date(entry.timestamp).toLocaleString()}</div>
+              <div className="audit-content">
+                <div className="feedback-detail">
+                  <strong>Feedback:</strong>
+                  <p>{entry.feedback}</p>
+                </div>
+                <div className="response-detail">
+                  <strong>AI Response:</strong>
+                  <p>{entry.response}</p>
+                </div>
+                <div className="change-detail">
+                  <strong>Agreed Change:</strong>
+                  <p>{entry.change}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+          {agreedChanges.length === 0 && (
+            <p className="no-changes">No agreed changes yet</p>
+          )}
+        </div>
+      </section>
     </div>
   );
 };
