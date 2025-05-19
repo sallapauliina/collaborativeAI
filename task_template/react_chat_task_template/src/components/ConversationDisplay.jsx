@@ -11,6 +11,8 @@ const ConversationDisplay = ({ isLoading, setIsLoading, theme, isDisabled, messa
     inconsistencies: "",
     bias: ""
   });
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [showData, setShowData] = useState(false);
   const [agreedChanges, setAgreedChanges] = useState([]);
   const messagesRef = useRef(null);
 
@@ -53,7 +55,8 @@ const ConversationDisplay = ({ isLoading, setIsLoading, theme, isDisabled, messa
     if (!inputData.trim()) return;
     
     setIsLoading(true);
-    // Add user's input to message history
+    setShowAnalysis(true);  // Show analysis view immediately
+    
     addMessage({
       sender: 'user',
       text: `Submitted data for analysis:\n${inputData}`,
@@ -93,6 +96,31 @@ const ConversationDisplay = ({ isLoading, setIsLoading, theme, isDisabled, messa
           console.error("Error:", error);
           setIsLoading(false);
         });
+  };
+
+  const handleStartOver = () => {
+    setInputData("");
+    setFeedback("");
+    setCurrentAnalysis({ inconsistencies: "", bias: "" });
+    setShowAnalysis(false);
+  };
+
+  const handleExport = () => {
+    // Create message history export
+    const exportData = messages.map(msg => ({
+      timestamp: new Date().toISOString(),
+      sender: msg.sender,
+      content: msg.text
+    }));
+
+    // Create and download file
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analysis-history.json';
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const handleFeedback = (event) => {
@@ -156,122 +184,207 @@ const ConversationDisplay = ({ isLoading, setIsLoading, theme, isDisabled, messa
         });
   };
 
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setInputData(e.target.result);
+      };
+      reader.readAsText(file);
+    }
+  };
+
   return (
     <div className="validation-workspace">
-      {/* Data Input Section */}
-      <section className="data-input-section">
-        <h3>Input Qualitative Data</h3>
-        <div className="dialogue-content" ref={messagesRef}>
-          {inputData && (
-            <div className="dialogue-item user">
-              <div className="dialogue-text">
-                {inputData.split('\n').map((line, i) => (
-                  <p key={i}>{line}</p>
-                ))}
+      {!showAnalysis ? (
+        // Input Data Section
+        <section className="data-input-section">
+          <h3>Input Qualitative Data</h3>
+          <div className="form-wrapper">
+            <form onSubmit={handleAnalyze} className="input-form">
+              <div className="file-input-wrapper">
+                <div className="file-input-row">
+                  <input 
+                    type="file"
+                    accept=".txt"
+                    onChange={handleFileUpload}
+                    disabled={!isDisabled || isLoading}
+                    className="file-input"
+                  />
+                  {inputData && (
+                    <button
+                      type="button"
+                      onClick={() => setShowData(!showData)}
+                      className="view-data-button"
+                    >
+                      {showData ? 'Hide Data' : 'View Data'}
+                    </button>
+                  )}
+                </div>
+                {showData && inputData && (
+                  <div className="data-modal">
+                    <div className="data-modal-content">
+                      <div className="data-modal-header">
+                        <h4>Your Data</h4>
+                        <button 
+                          type="button"
+                          onClick={() => setShowData(false)}
+                          className="close-button"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className="data-modal-body">
+                        <div className="dialogue-item user">
+                          <div className="dialogue-text">
+                            {inputData.split('\n').map((line, i) => (
+                              <p key={i}>{line}</p>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-        </div>
-        <div className="form-wrapper">
-          <form onSubmit={handleAnalyze} className="input-form">
-            <textarea 
-              value={inputData}
-              disabled={!isDisabled || isLoading}
-              onChange={(e) => setInputData(e.target.value)} 
-              placeholder="Paste your qualitative data here for analysis"
-              rows={6}
-              className="input-textarea"
-            />
-            <button 
-              type="submit" 
-              disabled={!isDisabled || isLoading}
-              className="analyze-button"
-            > 
-              Analyze Data
-            </button>
-          </form>
-        </div>
-      </section>
+              <button 
+                type="submit" 
+                disabled={!isDisabled || isLoading || !inputData}
+                className="analyze-button"
+              > 
+                Analyze Data
+              </button>
+            </form>
+          </div>
+        </section>
+      ) : (
+        // Analysis and Feedback Sections
+        <>
+          <div className="analysis-feedback-container">
+            <section className="analysis-section">
+              <h3>Current Analysis</h3>
+              <div className="analysis-content">
+                {(currentAnalysis.inconsistencies || currentAnalysis.bias) ? (
+                  <div className="analysis-sections">
+                    {currentAnalysis.inconsistencies && (
+                      <div className="analysis-category">
+                        <h4>Inconsistencies Found</h4>
+                        <div className="dialogue-item ai">
+                          <div className="dialogue-text">
+                            {currentAnalysis.inconsistencies.split('\n').map((line, i) => (
+                              <p key={i}>{line}</p>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-      {/* Current Analysis Display */}
-      <section className="analysis-section">
-        <h3>Current Analysis</h3>
-        <div className="analysis-content">
-          {(currentAnalysis.inconsistencies || currentAnalysis.bias) ? (
-            <div className="analysis-sections">
-              {currentAnalysis.inconsistencies && (
-                <div className="analysis-category">
-                  <h4>Inconsistencies Found</h4>
-                  <div className="dialogue-item ai">
+                    {currentAnalysis.bias && (
+                      <div className="analysis-category">
+                        <h4>Potential Bias Identified</h4>
+                        <div className="dialogue-item ai">
+                          <div className="dialogue-text">
+                            {currentAnalysis.bias.split('\n').map((line, i) => (
+                              <p key={i}>{line}</p>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="no-analysis">
+                    {inputData ? 
+                      "No inconsistencies or bias found in the data." : 
+                      "No analysis yet. Submit data to begin."}
+                  </p>
+                )}
+              </div>
+              {isLoading && <div className="loading">Analyzing data...</div>}
+            </section>
+
+            <section className="feedback-section">
+              <h3>Provide Feedback</h3>
+              <div className="dialogue-content">
+                {feedback && (
+                  <div className="dialogue-item user">
                     <div className="dialogue-text">
-                      {currentAnalysis.inconsistencies.split('\n').map((line, i) => (
+                      {feedback.split('\n').map((line, i) => (
                         <p key={i}>{line}</p>
                       ))}
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+              <div className="form-wrapper">
+                <form onSubmit={handleFeedback} className="input-form">
+                  <textarea 
+                    value={feedback}
+                    disabled={!isDisabled || isLoading || !(currentAnalysis.inconsistencies || currentAnalysis.bias)}
+                    onChange={(e) => setFeedback(e.target.value)} 
+                    placeholder={currentAnalysis.inconsistencies || currentAnalysis.bias ? 
+                      "Provide feedback on the analysis..." : 
+                      "Submit data for analysis first"}
+                    rows={4}
+                    className="feedback-textarea"
+                  />
+                  <button 
+                    type="submit" 
+                    disabled={!isDisabled || isLoading || !(currentAnalysis.inconsistencies || currentAnalysis.bias)}
+                    className="feedback-button"
+                  > 
+                    Submit Feedback
+                  </button>
+                </form>
+              </div>
+            </section>
+          </div>
 
-              {currentAnalysis.bias && (
-                <div className="analysis-category">
-                  <h4>Potential Bias Identified</h4>
-                  <div className="dialogue-item ai">
-                    <div className="dialogue-text">
-                      {currentAnalysis.bias.split('\n').map((line, i) => (
-                        <p key={i}>{line}</p>
-                      ))}
+          <div className="data-view-section">
+            {showData && inputData && (
+              <div className="data-modal">
+                <div className="data-modal-content">
+                  <div className="data-modal-header">
+                    <h4>Your Data</h4>
+                    <button 
+                      type="button"
+                      onClick={() => setShowData(false)}
+                      className="close-button"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="data-modal-body">
+                    <div className="dialogue-item user">
+                      <div className="dialogue-text">
+                        {inputData.split('\n').map((line, i) => (
+                          <p key={i}>{line}</p>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-          ) : (
-            <p className="no-analysis">
-              {inputData ? 
-                "No inconsistencies or bias found in the data." : 
-                "No analysis yet. Submit data to begin."}
-            </p>
-          )}
-        </div>
-        {isLoading && <div className="loading">Analyzing data...</div>}
-      </section>
-
-      {/* Feedback Section */}
-      <section className="feedback-section">
-        <h3>Provide Feedback</h3>
-        <div className="dialogue-content">
-          {feedback && (
-            <div className="dialogue-item user">
-              <div className="dialogue-text">
-                {feedback.split('\n').map((line, i) => (
-                  <p key={i}>{line}</p>
-                ))}
               </div>
-            </div>
-          )}
-        </div>
-        <div className="form-wrapper">
-          <form onSubmit={handleFeedback} className="input-form">
-            <textarea 
-              value={feedback}
-              disabled={!isDisabled || isLoading || !(currentAnalysis.inconsistencies || currentAnalysis.bias)}
-              onChange={(e) => setFeedback(e.target.value)} 
-              placeholder={currentAnalysis.inconsistencies || currentAnalysis.bias ? 
-                "Provide feedback on the analysis..." : 
-                "Submit data for analysis first"}
-              rows={4}
-              className="feedback-textarea"
-            />
+            )}
+          </div>
+
+          <div className="workflow-buttons">
             <button 
-              type="submit" 
-              disabled={!isDisabled || isLoading || !(currentAnalysis.inconsistencies || currentAnalysis.bias)}
-              className="feedback-button"
-            > 
-              Submit Feedback
+              onClick={handleStartOver}
+              className="start-over-button"
+            >
+              Start Over
             </button>
-          </form>
-        </div>
-      </section>
+            <button 
+              onClick={handleExport}
+              className="export-button"
+            >
+              Export History
+            </button>
+          </div>
+        </>
+      )}
 
       {/* Audit Trail */}
       <section className="audit-trail">

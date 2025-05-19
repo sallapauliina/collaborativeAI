@@ -1,17 +1,19 @@
 .workspace-container {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  height: calc(100vh - 80px); /* Adjust based on your header height */
+  overflow: hidden;
 }
 
-.main-workspace {
+.main-content {
+  padding: 20px;
   overflow-y: auto;
 }
 
-.message-history {
+.audit-trail-sidebar {
   background: #fff;
   border-left: 1px solid #dee2e6;
   padding: 20px;
-  height: 100%;
   overflow-y: auto;
 }
 
@@ -25,6 +27,7 @@
   padding: 15px;
   border-radius: 8px;
   border: 1px solid #dee2e6;
+  background: #fff;
 }
 
 .history-item.user {
@@ -51,7 +54,7 @@
   color: #6c757d;
 }
 
-.history-content {
+.message-text {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
