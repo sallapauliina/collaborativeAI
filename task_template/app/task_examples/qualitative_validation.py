@@ -13,42 +13,67 @@ logger = logging.getLogger(__name__)
 def get_system_prompt() -> str:
     return """You are an expert qualitative data validator. Your role is to help researchers identify quality issues in their qualitative data. 
     
-    Analyze the data focusing on two key areas:
-    1. Inconsistencies: Identify contradictions or conflicting statements within the data
-    2. Potential Bias: Detect possible sources of bias (researcher bias, selection bias, response bias, etc.)
+    Analyze the data and format EACH finding as a suggestion with the EXACT structure shown below:
     
-    Only report findings if you identify actual inconsistencies or potential biases. If none are found in a category, leave it empty.
-    
-    Format your response as follows:
     [ANALYSIS]
     [INCONSISTENCIES]
-    List and explain any inconsistencies found...
+    1. [Title: Resolve data inconsistency]
+    Description: Detailed explanation of what needs to be fixed and why
+    Addresses: Which part of the data this suggestion addresses
+    
+    2. [Title: Another inconsistency fix]
+    Description: ...
+    Addresses: ...
     [/INCONSISTENCIES]
 
     [BIAS]
-    List and explain potential biases identified...
+    1. [Title: Address potential bias]
+    Description: Detailed explanation of the bias and how to address it
+    Addresses: Which aspects of the research this suggestion improves
+    
+    2. [Title: Another bias mitigation]
+    Description: ...
+    Addresses: ...
     [/BIAS]
     [/ANALYSIS]
     
     [SUGGESTIONS]
-    Your specific suggestions for improvement...
-    [/SUGGESTIONS]"""
+    1. [Title: General improvement suggestion]
+    Description: Detailed explanation of the suggested improvement
+    Addresses: What aspect of the research this improves
+    [/SUGGESTIONS]
+
+    IMPORTANT: 
+    - Use the EXACT format shown above
+    - Make all feedback actionable as suggestions
+    - Number each item starting from 1
+    - Include ALL required fields for each item
+    - If no items in a category, still include the category tags but leave empty
+    """
 
 def get_feedback_prompt() -> str:
     return """You are collaborating with a researcher to validate and improve qualitative data analysis. 
-    The researcher has provided feedback on your analysis. Your role is to:
-    1. Consider their feedback carefully
-    2. If you agree with their points, incorporate them into your analysis
-    3. If you disagree, explain why while maintaining a collaborative tone
-    4. Suggest any additional insights based on the discussion
-
-    Format your response as follows:
+    Consider their feedback and perform a new analysis of the data with their suggestions in mind.
+    
+    Use the same structured format as the initial analysis:
     [ANALYSIS]
-    Your updated analysis incorporating agreed changes...
+    [INCONSISTENCIES]
+    1. [Title: Brief title]
+    Description: Detailed explanation
+    Addresses: What this addresses
+    [/INCONSISTENCIES]
+
+    [BIAS]
+    1. [Title: Brief title]
+    Description: Detailed explanation
+    Addresses: What this addresses
+    [/BIAS]
     [/ANALYSIS]
     
     [SUGGESTIONS]
-    Your response to their feedback, clearly stating if you agree or disagree and why...
+    1. [Title: Brief title]
+    Description: Detailed explanation
+    Addresses: What this addresses
     [/SUGGESTIONS]"""
 
 class QualitativeValidation(TaskInterface):
@@ -83,6 +108,7 @@ class QualitativeValidation(TaskInterface):
 
     def process_model_answer(self, response: ModelResponse) -> TaskDataResponse:
         """Process the AI model's response"""
+        logger.info(f"AI Response: {response.text}")
         return TaskDataResponse(text=response.text)
 
     def get_requirements(self) -> TaskRequirements:
