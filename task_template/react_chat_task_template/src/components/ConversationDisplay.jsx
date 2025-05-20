@@ -441,7 +441,7 @@ const ConversationDisplay = ({ isLoading, setIsLoading, theme, isDisabled, messa
                         onClick={() => handleSuggestionSelect(item)}
                         className="remove-suggestion"
                       >
-                        Remove
+                        ×
                       </button>
                     </div>
                     <div className="analysis-item-content">
